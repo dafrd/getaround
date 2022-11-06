@@ -3,8 +3,13 @@ import pandas as pd
 from pydantic import BaseModel
 from typing import Literal, List
 from fastapi import Body, FastAPI
+from fastapi import FastAPI, HTTPException
 import json
 import pickle
+from fastapi.encoders import jsonable_encoder
+#from joblib import dump, load
+#from fastapi.encoders import jsonable_encoder
+#from fastapi.responses import JSONResponse
 
 description = """
 GetAround Pricing API
@@ -14,12 +19,12 @@ tags_metadata = [
 
     {
         "name": "Preview",
-        "description": "Endpoints that quickly explore dataset",
+        "description": "Endpoints that quickly explore dataset"
     },
 
     {
         "name": "Prediction",
-        "description": "Rental Pricing prediction based on our model"
+        "description": "Rental Pricing prediction based on my model"
     }
 ]
 
@@ -35,19 +40,19 @@ app = FastAPI(
 )
 
 class PredictionFeatures(BaseModel):
-    model_key:str
-    mileage:int
-    engine_power:int
-    fuel:str
-    paint_color:str
-    car_type:str
-    private_parking_available:bool
-    has_gps:bool
-    has_air_conditioning:bool
-    automatic_car:bool
-    has_getaround_connect:bool
-    has_speed_regulator:bool
-    winter_tires:bool
+    model_key: str = "Renault"
+    mileage: int = 162327
+    engine_power: int = 190
+    fuel: str = "diesel"
+    paint_color: str = "black"
+    car_type: str = "coupe"
+    private_parking_available: bool = True
+    has_gps: bool = True
+    has_air_conditioning: bool = False
+    automatic_car: bool = True
+    has_getaround_connect: bool = True
+    has_speed_regulator: bool = True
+    winter_tires: bool = True
 
 @app.get("/preview", tags=["Preview"])
 async def sample(rows: int=10):
@@ -55,21 +60,31 @@ async def sample(rows: int=10):
     Get a sample of your whole dataset. 
     You can specify how many rows you want by specifying a value for `rows`, default is `10`
     """
-    df = pd.read_csv("get_around_pricing_project.csv")
+    df = pd.read_csv("get_around_pricing_project.csv",index_col=0)
     sample = df.sample(rows)
-    return sample.to_json()
+    return sample.to_json(orient='records')
 
 @app.post("/predict", tags=["Prediction"])
-async def predict(predictionFeatures:PredictionFeatures,item: PredictionFeatures = Body(embed=True)):
+async def predict(predictionFeatures:PredictionFeatures):
+#async def predict(predictionFeatures:PredictionFeatures=Body(embed=True)):    
     """
     Rental price prediction based on car characteristics
     """
+    #json_compatible_item_data = jsonable_encoder(predictionFeatures)
     df = pd.DataFrame(dict(predictionFeatures), index=[0])
     #model = pickle.load(open('getaround_model.pkl','rb'))
-    getaround_model = pickle.load(open('getaround_model.pkl','rb'))
+
+    with open('getaround_model.pkl', 'rb') as f:
+         getaround_model = pickle.load(f)
+         
     prediction = getaround_model.predict(df)
     response = {"Rental car pricing based on the car info":prediction.tolist()[0]}
+
     return response
+
+# @app.exception_handler(500)
+# async def internal_exception_handler(request: Request, exc: Exception):
+#   return JSONResponse(status_code=500, content=jsonable_encoder({"code": 500, "msg": "Internal Server Error"}))
 
 if __name__=="__main__":
     uvicorn.run(app, host="0.0.0.0", port=4000, debug=True, reload=True)
