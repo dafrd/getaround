@@ -2,7 +2,7 @@ import uvicorn
 import pandas as pd 
 from pydantic import BaseModel
 from typing import Literal, List
-from fastapi import FastAPI
+from fastapi import Body, FastAPI
 import json
 import pickle
 
@@ -50,28 +50,25 @@ class PredictionFeatures(BaseModel):
     winter_tires:bool
 
 @app.get("/preview", tags=["Preview"])
-async def random_employees(rows: int=10):
+async def sample(rows: int=10):
     """
     Get a sample of your whole dataset. 
     You can specify how many rows you want by specifying a value for `rows`, default is `10`
     """
-    df = pd.read_excel("get_around_pricing_project.csv")
+    df = pd.read_csv("get_around_pricing_project.csv")
     sample = df.sample(rows)
     return sample.to_json()
 
 @app.post("/predict", tags=["Prediction"])
-async def predict(predictionFeatures: PredictionFeatures):
+async def predict(predictionFeatures:PredictionFeatures,item: PredictionFeatures = Body(embed=True)):
     """
     Rental price prediction based on car characteristics
     """
-    
     df = pd.DataFrame(dict(predictionFeatures), index=[0])
-
     #model = pickle.load(open('getaround_model.pkl','rb'))
     getaround_model = pickle.load(open('getaround_model.pkl','rb'))
     prediction = getaround_model.predict(df)
-
-    response = {"prediction": prediction.tolist()[0]}
+    response = {"Rental car pricing based on the car info":prediction.tolist()[0]}
     return response
 
 if __name__=="__main__":
