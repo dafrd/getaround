@@ -1,13 +1,13 @@
 import uvicorn
 import pandas as pd 
 from pydantic import BaseModel
-from typing import Literal, List
+from typing import Literal, List, Union
 from fastapi import Body, FastAPI
 from fastapi import FastAPI, HTTPException
 import json
 import pickle
 from fastapi.encoders import jsonable_encoder
-#from joblib import dump, load
+from joblib import dump, load
 #from fastapi.encoders import jsonable_encoder
 #from fastapi.responses import JSONResponse
 
@@ -40,19 +40,19 @@ app = FastAPI(
 )
 
 class PredictionFeatures(BaseModel):
-    model_key: str = "Renault"
-    mileage: int = 162327
-    engine_power: int = 190
-    fuel: str = "diesel"
-    paint_color: str = "black"
-    car_type: str = "coupe"
-    private_parking_available: bool = True
-    has_gps: bool = True
-    has_air_conditioning: bool = False
-    automatic_car: bool = True
-    has_getaround_connect: bool = True
-    has_speed_regulator: bool = True
-    winter_tires: bool = True
+    model_key: object
+    mileage: Union[int, float]
+    engine_power: Union[int, float]
+    fuel:object
+    paint_color:object
+    car_type:object
+    private_parking_available:bool  
+    has_gps:bool  
+    has_air_conditioning:bool  
+    automatic_car:bool  
+    has_getaround_connect: bool  
+    has_speed_regulator:bool  
+    winter_tires:bool  
 
 @app.get("/preview", tags=["Preview"])
 async def sample(rows: int=10):
@@ -74,12 +74,32 @@ async def predict(predictionFeatures:PredictionFeatures):
     df = pd.DataFrame(dict(predictionFeatures), index=[0])
     #model = pickle.load(open('getaround_model.pkl','rb'))
 
+    #features = predictionFeatures.dict()
+    # model_key = features['model_key']
+    # mileage = features['mileage']
+    # engine_power = features['engine_power']
+    # fuel = features['fuel']
+    # paint_color = features['paint_color']
+    # car_type = features['car_type']
+    # private_parking_available = features['private_parking_available']
+    # has_gps = features['has_gps']
+    # has_air_conditioning = features['has_air_conditioning']
+    # automatic_car = features['automatic_car']
+    # has_getaround_connect = features['has_getaround_connect']
+    # has_speed_regulator = features['has_speed_regulator']
+    # winter_tires = features['winter_tires']
+
     with open('getaround_model.pkl', 'rb') as f:
-         getaround_model = pickle.load(f)
-         
+          getaround_model = pickle.load(f)
+
     prediction = getaround_model.predict(df)
     response = {"Rental car pricing based on the car info":prediction.tolist()[0]}
 
+    #df = pd.DataFrame(dict(predictionFeatures), index=[0])
+
+    # loaded_model = load('getaround_model.joblib')
+    #prediction = loaded_model.predict(df)
+    # response = {"Rental car pricing based on the car info":prediction.tolist()[0]}
     return response
 
 # @app.exception_handler(500)

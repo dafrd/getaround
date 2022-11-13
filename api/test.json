@@ -1,0 +1,15 @@
+{
+    "model_key":"Renault",
+    "mileage":162327,
+    "engine_power":190,
+    "fuel":"diesel",
+    "paint_color":"black",
+    "car_type":"coupe",
+    "private_parking_available":true,
+    "has_gps":true,
+    "has_air_conditioning":false,
+    "automatic_car":true,
+    "has_getaround_connect":true,
+    "has_speed_regulator":true,
+    "winter_tires":true
+}
