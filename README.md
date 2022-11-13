@@ -1,6 +1,8 @@
 # getaround
 
 Explanatory video : https://share.vidyard.com/watch/ctrXv5CZGAgaXubf7fPHWt?
+API : http://82.65.181.64:49157/docs
+Dashboard : http://82.65.181.64:49183
 
 GetAround
 GetAround is the Airbnb for cars. You can rent cars from any person for a few hours to a few days! Founded in 2009, this company has known rapid growth. In 2019, they count over 5 million users and about 20K available cars worldwide.
